@@ -81,6 +81,49 @@ void NTPClient::begin(unsigned int port) {
   this->_udpSetup = true;
 }
 
+void NTPClient::calcDate() {
+  int i;
+  epoch = this->getEpochTime();
+  leap_days=0; 
+  leap_year_ind=0;
+  
+//   ntp_second = epoch%60;
+  epoch /= 60;
+//   ntp_minute = epoch%60;
+  epoch /= 60;
+//   ntp_hour  = epoch%24;
+  epoch /= 24;
+  
+  days_since_epoch = epoch;      //number of days since epoch
+  ntp_week_day = week_days[days_since_epoch%7];  //Calculating WeekDay
+  
+  ntp_year = 1970+(days_since_epoch/365); // ball parking year, may not be accurate!
+  
+  for (i=1972; i<ntp_year; i+=4)      // Calculating number of leap days since epoch/1970
+  if(((i%4==0) && (i%100!=0)) || (i%400==0)) leap_days++;
+  
+  ntp_year = 1970+((days_since_epoch - leap_days)/365); // Calculating accurate current year by (days_since_epoch - extra leap days)
+  day_of_year = ((days_since_epoch - leap_days)%365)+1;
+  
+  
+  if(((ntp_year%4==0) && (ntp_year%100!=0)) || (ntp_year%400==0)) {
+    month_days[1]=29;     //February = 29 days for leap years
+    leap_year_ind = 1;    //if current year is leap, set indicator to 1 
+  }
+  else month_days[1]=28; //February = 28 days for non-leap years 
+  
+  temp_days=0;
+  
+  for (ntp_month=0 ; ntp_month <= 11 ; ntp_month++) //calculating current Month
+  {
+    if (day_of_year <= temp_days) break; 
+    temp_days = temp_days + month_days[ntp_month];
+  }
+  
+  temp_days = temp_days - month_days[ntp_month-1]; //calculating current Date
+  ntp_date = day_of_year - temp_days;
+}
+
 bool NTPClient::forceUpdate() {
   #ifdef DEBUG_NTPClient
     Serial.println("Update from NTP Server");
@@ -147,6 +190,69 @@ int NTPClient::getMinutes() const {
 }
 int NTPClient::getSeconds() const {
   return (this->getEpochTime() % 60);
+}
+
+String NTPClient::getFormattedLongDate() const {
+//   this->calcDate();
+    String weekDayStr, monthStr;
+    switch(ntp_week_day) {
+    case 0: weekDayStr = "Sunday";
+    break;
+    case 1: weekDayStr = "Monday";
+    break;
+    case 2: weekDayStr = "Tuesday";
+    break;
+    case 3: weekDayStr = "Wednesday";
+    break;
+    case 4: weekDayStr = "Thursday";
+    break;
+    case 5: weekDayStr = "Friday";
+    break;
+    case 6: weekDayStr = "Saturday";
+    break;
+    default: break;        
+  }
+  switch(ntp_month) {
+    case 1: monthStr = "January";
+    break;
+    case 2: monthStr = "February";
+    break;
+    case 3: monthStr = "March";
+    break;
+    case 4: monthStr = "April";
+    break;
+    case 5: monthStr = "May";
+    break;
+    case 6: monthStr = "June";
+    break;
+    case 7: monthStr = "July";
+    break;
+    case 8: monthStr = "August";
+    break;
+    case 9: monthStr = "September";
+    break;
+    case 10: monthStr = "October";
+    break;
+    case 11: monthStr = "November";
+    break;
+    case 12: monthStr = "December";       
+    default: break;        
+  }
+  
+//   String monthStr = ntp_month < 10 ? "0" + String(ntp_month) : String(ntp_month);
+//   String dayStr = ntp_date < 10 ? "0" + String(ntp_date) : String(ntp_date);
+//   String yearStr = ntp_year < 10 ? "0" + String(ntp_year) : String(ntp_year);
+  String dayStr = String(ntp_date);
+  String yearStr = String(ntp_year);
+  return weekDayStr + ", " + monthStr + " " + dayStr + ", " + yearStr;
+}
+
+String NTPClient::getFormattedDate() const {
+//   this->calcDate();
+  String monthStr = ntp_month < 10 ? "0" + String(ntp_month) : String(ntp_month);
+  String dayStr = ntp_date < 10 ? "0" + String(ntp_date) : String(ntp_date);
+  String yearStr = ntp_year < 10 ? "0" + String(ntp_year) : String(ntp_year);
+  return monthStr + "/" + dayStr + "/" + yearStr;
 }
 
 String NTPClient::getFormattedTime() const {

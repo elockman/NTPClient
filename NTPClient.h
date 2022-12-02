@@ -27,6 +27,14 @@ class NTPClient {
 
     void          sendNTPPacket();
 
+    
+    unsigned char month_days[12]={31,28,31,30,31,30,31,31,30,31,30,31};
+    unsigned char week_days[7] = {4,5,6,0,1,2,3}; //Thu=4, Fri=5, Sat=6, Sun=0, Mon=1, Tue=2, Wed=3
+//     unsigned char ntp_hour, ntp_minute, ntp_second, ntp_week_day, ntp_date, ntp_month, leap_days, leap_year_ind ;
+    unsigned char ntp_week_day, ntp_date, ntp_month, leap_days, leap_year_ind ;
+    unsigned short temp_days;
+    unsigned int epoch, ntp_year, days_since_epoch, day_of_year; 
+
   public:
     NTPClient(UDP& udp);
     NTPClient(UDP& udp, long timeOffset);
@@ -58,6 +66,8 @@ class NTPClient {
      * Starts the underlying UDP client with the specified local port
      */
     void begin(unsigned int port);
+
+    void calcDate();
 
     /**
      * This should be called in the main loop of your application. By default an update from the NTP Server is only
@@ -96,6 +106,16 @@ class NTPClient {
      * timeOffset should not be set in the constructor
      */
     void setUpdateInterval(unsigned long updateInterval);
+
+    /**
+     * @return date formatted like `DayofWeek, Month Day, Year`
+     */
+    String getFormattedLongDate() const;
+
+    /**
+     * @return date formatted like `Month/Day/Year`
+     */
+    String getFormattedDate() const;
 
     /**
      * @return time formatted like `hh:mm:ss`
