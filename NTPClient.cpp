@@ -255,7 +255,7 @@ String NTPClient::getFormattedDate() const {
   return monthStr + "/" + dayStr + "/" + yearStr;
 }
 
-String NTPClient::getFormattedTime() const {
+String NTPClient::getFormattedLongTime() const {
   unsigned long rawTime = this->getEpochTime();
   unsigned long hours = (rawTime % 86400L) / 3600;
   String hoursStr = hours < 10 ? "0" + String(hours) : String(hours);
@@ -267,6 +267,17 @@ String NTPClient::getFormattedTime() const {
   String secondStr = seconds < 10 ? "0" + String(seconds) : String(seconds);
 
   return hoursStr + ":" + minuteStr + ":" + secondStr;
+}
+
+String NTPClient::getFormattedTime() const {
+  unsigned long rawTime = this->getEpochTime();
+  unsigned long hours = (rawTime % 86400L) / 3600;
+  String hoursStr = hours < 10 ? "0" + String(hours) : String(hours);
+
+  unsigned long minutes = (rawTime % 3600) / 60;
+  String minuteStr = minutes < 10 ? "0" + String(minutes) : String(minutes);
+
+  return hoursStr + ":" + minuteStr;
 }
 
 void NTPClient::end() {

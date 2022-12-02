@@ -120,6 +120,11 @@ class NTPClient {
     /**
      * @return time formatted like `hh:mm:ss`
      */
+    String getFormattedLongTime() const;
+
+    /**
+     * @return time formatted like `hh:mm
+     */
     String getFormattedTime() const;
 
     /**
